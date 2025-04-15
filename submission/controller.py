@@ -15,15 +15,24 @@ class Controller(BaseController):
         self.quit = False
         self.cpg_network = get_cpg(timestep=timestep, seed=seed)
         self.preprogrammed_steps = PreprogrammedSteps()
+
+        turn_intensity = 1.5
+
         self.turn_left_steps = PreprogrammedSteps()
-        self.turn_left_steps.swing_period["RF"] *= 1.5
-        self.turn_left_steps.swing_period["RM"] *= 1.5
-        self.turn_left_steps.swing_period["RH"] *= 1.5
+        self.turn_left_steps.swing_period["RF"] *= turn_intensity
+        self.turn_left_steps.swing_period["RM"] *= turn_intensity
+        self.turn_left_steps.swing_period["RH"] *= turn_intensity
+        self.turn_left_steps.swing_period["LF"] /= turn_intensity
+        self.turn_left_steps.swing_period["LM"] /= turn_intensity
+        self.turn_left_steps.swing_period["LH"] /= turn_intensity
             
         self.turn_right_steps = PreprogrammedSteps()
-        self.turn_right_steps.swing_period["LF"] *= 1.5
-        self.turn_right_steps.swing_period["LM"] *= 1.5
-        self.turn_right_steps.swing_period["LH"] *= 1.5
+        self.turn_right_steps.swing_period["LF"] *= turn_intensity
+        self.turn_right_steps.swing_period["LM"] *= turn_intensity
+        self.turn_right_steps.swing_period["LH"] *= turn_intensity
+        self.turn_right_steps.swing_period["RF"] /= turn_intensity
+        self.turn_right_steps.swing_period["RM"] /= turn_intensity
+        self.turn_right_steps.swing_period["RH"] /= turn_intensity
 
     def get_actions(self, obs: Observation) -> Action:
         if(obs["odor_intensity"][0][0] > obs["odor_intensity"][0][1]):

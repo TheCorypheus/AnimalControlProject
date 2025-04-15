@@ -16,7 +16,7 @@ class Controller(BaseController):
         self.cpg_network = get_cpg(timestep=timestep, seed=seed)
         self.preprogrammed_steps = PreprogrammedSteps()
 
-        turn_intensity = 1.5
+        turn_intensity = 2.5
 
         self.turn_left_steps = PreprogrammedSteps()
         self.turn_left_steps.swing_period["RF"] *= turn_intensity

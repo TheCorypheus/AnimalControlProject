@@ -2,6 +2,7 @@ from pathlib import Path
 import importlib
 import argparse
 import sys
+import dm_control.rl.control
 import numpy as np
 import pandas as pd
 from tqdm import trange
@@ -31,8 +32,8 @@ def run_simulation(
         render_raw_vision=True,
     )
 
-    if level <= -1:
-        level_arena = FlatTerrain()
+    if 0 > level > 4:
+        raise ValueError("level should be between 0 and 4.")
     elif level <= 1:
         # levels 0 and 1 don't need the timestep
         level_arena = levels[level](fly=fly, seed=seed)
@@ -66,13 +67,23 @@ def run_simulation(
 
     for i in step_range:
         # Get observations
-        obs, reward, terminated, truncated, info = sim.step(controller.get_actions(obs))
-        sim.render()
+        try:
+            obs, reward, terminated, truncated, info = sim.step(
+                controller.get_actions(obs)
+            )
+        except dm_control.rl.control.PhysicsError:
+            result = (0, "physics error - probably fly got hit by the ball")
         if terminated or truncated:
             result = (0, "simulated terminated by error")
 
         if controller.done_level(obs):
             if level == 4:
+                if level_arena.state != "returning":
+                    result = (
+                        0,
+                        "controller terminated during path integration before getting odour",
+                    )
+                    break
                 # finish the path integration level
                 distance_from_origin = np.linalg.norm(
                     fly.last_obs["pos"][:2]

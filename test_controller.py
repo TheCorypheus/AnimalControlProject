@@ -73,6 +73,7 @@ def run_simulation(
             )
         except dm_control.rl.control.PhysicsError:
             result = (0, "physics error - probably fly got hit by the ball")
+        sim.render()
         if terminated or truncated:
             result = (0, "simulated terminated by error")
 

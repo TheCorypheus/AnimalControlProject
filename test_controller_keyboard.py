@@ -2,14 +2,18 @@ from pathlib import Path
 import importlib
 import argparse
 import sys
+import cv2
 import dm_control.rl.control
 import numpy as np
 import pandas as pd
 from tqdm import trange
-from flygym import Camera
+from flygym import Camera, YawOnlyCamera
 from cobar_miniproject import levels
 from cobar_miniproject.cobar_fly import CobarFly
 from flygym import Camera, SingleFlySimulation
+
+from cobar_miniproject.keyboard_controller import KeyBoardController
+from cobar_miniproject.vision import get_fly_vision, render_image_with_vision
 
 
 def run_simulation(
@@ -20,10 +24,8 @@ def run_simulation(
     output_dir="outputs",
     progress=True,
 ):
-    sys.path.append(str(submission_dir.parent))
-    module = importlib.import_module(submission_dir.name)
-    controller = module.controller.Controller()
     timestep = 1e-4
+    controller = KeyBoardController(timestep=timestep)
 
     fly = CobarFly(
         debug=False,
@@ -40,13 +42,20 @@ def run_simulation(
         # levels 2-4 need the timestep
         level_arena = levels[level](fly=fly, timestep=timestep, seed=seed)
     
-    cam_params = {"pos": (0, 0, 80)}
+    # cam_params = {"pos": (0, 0, 80)}
 
-    cam = Camera(
-        attachment_point=level_arena.root_element.worldbody,
-        camera_name="camera_top_zoomout",
+    # cam = Camera(
+    #     attachment_point=level_arena.root_element.worldbody,
+    #     camera_name="camera_top_zoomout",
+    #     targeted_fly_names=[fly.name],
+    #     camera_parameters=cam_params,
+    #     play_speed=0.2,
+    # )
+
+    cam = YawOnlyCamera(
+        attachment_point=fly.model.worldbody,
+        camera_name="camera_back_track_game",
         targeted_fly_names=[fly.name],
-        camera_parameters=cam_params,
         play_speed=0.2,
     )
 
@@ -72,7 +81,18 @@ def run_simulation(
             )
         except dm_control.rl.control.PhysicsError:
             result = (0, "physics error - probably fly got hit by the ball")
-        sim.render()
+        
+        rendered_img = sim.render()[0]
+        if rendered_img is not None:
+            rendered_img = render_image_with_vision(
+                rendered_img,
+                get_fly_vision(fly),
+                obs["odor_intensity"],
+            )
+            rendered_img = cv2.cvtColor(rendered_img, cv2.COLOR_BGR2RGB)
+            cv2.imshow("Simulation", rendered_img)
+            cv2.waitKey(1)
+
         if terminated or truncated:
             result = (0, "simulated terminated by error")
 
@@ -125,7 +145,8 @@ def run_simulation(
 
 if __name__ == "__main__":
     levels_to_test = list(range(5))
-    seeds_to_test = [45, 38, 25]
+    # seeds_to_test = [45, 38, 25]
+    seeds_to_test = [45]
 
     parser = argparse.ArgumentParser(description="Run the fly simulation.")
     parser.add_argument(

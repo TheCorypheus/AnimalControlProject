@@ -144,10 +144,6 @@ def run_simulation(
 
 
 if __name__ == "__main__":
-    levels_to_test = list(range(5))
-    # seeds_to_test = [45, 38, 25]
-    seeds_to_test = [45]
-
     parser = argparse.ArgumentParser(description="Run the fly simulation.")
     parser.add_argument(
         "submission_dir",
@@ -155,10 +151,16 @@ if __name__ == "__main__":
         help="Path to the submission directory containing the controller module.",
     )
     parser.add_argument(
-        "--extra-seeds",
+        "--seeds",
         type=str,
-        help="extra random seeds (in addition to the default ones) to test your controller on - pass as a comma delimited list. eg 1,2,3,4,10",
-        default="",
+        help="random seeds to test your controller on - pass as a comma delimited list. eg 1,2,3,4,10",
+        default="45",
+    )
+    parser.add_argument(
+        "--levels",
+        type=str,
+        help="levels to test your controller on - pass as a comma delimited list. eg 0,1,4",
+        default="0,1,2,3,4",
     )
     parser.add_argument(
         "--output-dir",
@@ -168,8 +170,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.extra_seeds != "":
-        seeds_to_test += [int(seed) for seed in args.extra_seeds.split(",")]
+    levels_to_test = [int(levels) for levels in args.levels.split(",")]
+    seeds_to_test = [int(seed) for seed in args.seeds.split(",")]
 
     print(f"Testing levels {levels_to_test} with random seeds {seeds_to_test}")
 

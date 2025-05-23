@@ -121,8 +121,6 @@ class Controller(BaseController):
         return {
             "joints": joint_angles,
             "adhesion": adhesion,
-            "heading": self.signed_angle(self.heading_vec, [1, 0]),
-            "pos": self.est_pos
         }
 
     def done_level(self, obs: Observation):

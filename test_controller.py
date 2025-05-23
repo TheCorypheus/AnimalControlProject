@@ -124,8 +124,8 @@ def run_simulation(
 
 
 if __name__ == "__main__":
-    levels_to_test = [4]#list(range(5))
-    seeds_to_test = [45, 38, 25]
+    levels_to_test = list(range(5))
+    seeds_to_test = [45]
 
     parser = argparse.ArgumentParser(description="Run the fly simulation.")
     parser.add_argument(
